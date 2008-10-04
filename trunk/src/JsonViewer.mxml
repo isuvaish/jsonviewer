@@ -8,8 +8,13 @@
 			private function showJson():void
 			{
 				valueBox.text = null;
+				displayTree(jsonInput.text);	
+			}
+			private function displayTree(json:String):void
+			{
+				jsonInput.text = json;
 				try{
-					var jsonObj:Object = JSON.decode(jsonInput.text);
+					var jsonObj:Object = JSON.decode(json);
 					var jsonModel:Object = makeModel(jsonObj, "ROOT");
 					jsonTree.dataProvider = jsonModel;
 				} catch (e:Error) {
@@ -52,10 +57,21 @@
 					valueBox.text = Tree(event.target).selectedItem.data.toString();
 				else
 					valueBox.text = null;
-			}			
+			}
+			private function loadUrl():void
+			{
+				var loader:URLLoader = new URLLoader(new URLRequest(urlInput.text));
+				loader.addEventListener(Event.COMPLETE, function(e:Event):void{ displayTree(loader.data); });
+				loader.addEventListener(IOErrorEvent.IO_ERROR, function(e:Event):void{ Alert.show("Error retrieving URL: " + urlInput.text); });
+			}
 		]]>
 	</mx:Script>
 	<mx:Panel width="100%" height="100%" layout="vertical" id="mainPanel" title="JSON Viewer" color="#12D1FA" backgroundColor="#49575A">
+		<mx:HBox width="100%" height="10%" color="#070707">
+			<mx:Label text="Enter URL:" color="#12D1FA"/>
+			<mx:TextInput width="50%" id="urlInput"/>
+			<mx:Button label="Load" click="loadUrl()"/>
+		</mx:HBox>
 		<mx:HBox width="100%" height="100%" color="#070707">
 			<mx:TextArea id="jsonInput" height="100%" width="80%"/>
 			<mx:VBox height="100%">
