@@ -1,54 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" layout="vertical" width="600" height="800" backgroundGradientAlphas="[1.0, 1.0]" backgroundGradientColors="[#0C0303, #0C0303]">
+<mx:WindowedApplication xmlns:mx="http://www.adobe.com/2006/mxml" 
+	layout="vertical" width="600" height="800" 
+	backgroundGradientAlphas="[1.0, 1.0]" 
+	backgroundGradientColors="[#0C0303, #0C0303]">
 	<mx:Script>
 		<![CDATA[
-			import com.adobe.serialization.json.JSON;
 			import mx.controls.Alert;
 			
-			private function showJson():void
-			{
-				valueBox.text = null;
-				displayTree(jsonInput.text);	
-			}
+			[Bindable]
+			private var model:JsonModel = new JsonModel();
+			
+			// this is useful as standalone function because of try-catch
 			private function displayTree(json:String):void
 			{
-				jsonInput.text = json;
+				valueBox.text = null;
 				try{
-					var jsonObj:Object = JSON.decode(json);
-					var jsonModel:Object = makeModel(jsonObj, "ROOT");
-					jsonTree.dataProvider = jsonModel;
+					model.jsonString = json;
 				} catch (e:Error) {
 					Alert.show("Error parsing JSON: " + e.message);
 				}	
 			}		
 			private function reset():void
 			{
-				jsonTree.dataProvider = null;
-				jsonInput.text = null;
+				this.model = new JsonModel();
 				valueBox.text = null;
-			}
-			
-			private function makeModel(obj:Object, name:String) : Object 
-			{
-				var model:Object = {};
-				model.label = name;
-				model.children = [];
-				for (var prop:String in obj)
-				{
-					var value:Object = obj[prop];
-					if (value is String || value is Number || value is Boolean)
-					{
-						var node:Object = {};
-						node.label = prop;
-						node.data = value;
-						model.children.push(node);
-					} 
-					else
-					{
-						model.children.push(makeModel(value,prop));
-					}
-				}
-				return model;
 			}
 			private function selNode(event:Event):void
 			{
@@ -73,14 +48,15 @@
 			<mx:Button label="Load" click="loadUrl()"/>
 		</mx:HBox>
 		<mx:HBox width="100%" height="100%" color="#070707">
-			<mx:TextArea id="jsonInput" height="100%" width="80%"/>
+			<mx:TextArea id="jsonInput" height="100%" width="80%" text="{model.jsonString}"/>
 			<mx:VBox height="100%">
-				<mx:Button label="View" id="goBtn" click="showJson()"/>
+				<mx:Button label="View" id="goBtn" click="displayTree(jsonInput.text)"/>
 				<mx:Button label="Clear" id="resetBtn" click="reset()"/>
 			</mx:VBox>
 		</mx:HBox>
 		<mx:HBox width="100%" height="100%" color="#080808">
-			<mx:Tree width="80%" height="100%" id="jsonTree" change="selNode(event)"/>
+			<mx:Tree dataProvider="{model.jsonModel}" width="80%" height="100%" 
+				id="jsonTree" change="selNode(event)"/>
 			<mx:TextArea id="valueBox" width="20%" height="100%"/>	
 		</mx:HBox>
 	</mx:Panel>
